@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from dotenv import load_dotenv
 
@@ -195,6 +195,36 @@ def healthz() -> dict:
 def check_auth(access_password: str = Form("")) -> dict:
     verify_access_password(access_password)
     return {"status": "ok"}
+
+
+@APP.post("/debug/form")
+async def debug_form(request: Request) -> dict:
+    form = await request.form()
+    fields = {}
+    files = {}
+
+    for key, value in form.multi_items():
+        filename = getattr(value, "filename", None)
+        if filename is None:
+            fields.setdefault(key, []).append(str(value))
+            continue
+
+        files.setdefault(key, []).append(
+            {
+                "filename": filename,
+                "content_type": getattr(value, "content_type", None),
+                "size": getattr(value, "size", None),
+            }
+        )
+
+    return {
+        "method": request.method,
+        "content_type": request.headers.get("content-type"),
+        "content_length": request.headers.get("content-length"),
+        "form_keys": list(form.keys()),
+        "fields": fields,
+        "files": files,
+    }
 
 
 @APP.post("/tasks")
