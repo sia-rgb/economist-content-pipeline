@@ -63,6 +63,7 @@
     }
 
     input[type="file"] {
+      display: none;
       width: 100%;
       padding: 12px 14px;
       border: 1px solid var(--line);
@@ -160,11 +161,10 @@
     <section class="panel">
       <h1>经济学人助手小季</h1>
 
-      <label for="epubFile">EPUB 文件</label>
       <input id="epubFile" type="file" accept=".epub,application/epub+zip">
 
       <div class="actions">
-        <button id="uploadButton" type="button">上传并处理</button>
+        <button id="uploadButton" type="button">选择 EPUB 并上传</button>
         <a id="downloadLink" class="download" href="#" aria-disabled="true">下载 Word</a>
       </div>
 
@@ -189,6 +189,25 @@
 
     function showError(message) {
       errorText.textContent = message || "";
+    }
+
+    function errorMessage(error) {
+      if (!error) {
+        return "操作失败";
+      }
+      if (typeof error === "string") {
+        return error;
+      }
+      if (error.message) {
+        return error.message;
+      }
+      if (Array.isArray(error.detail)) {
+        return error.detail.map((item) => item.msg || JSON.stringify(item)).join("\n");
+      }
+      if (error.detail) {
+        return String(error.detail);
+      }
+      return JSON.stringify(error);
     }
 
     function setBusy(isBusy) {
@@ -237,7 +256,7 @@
         });
         const payload = await response.json();
         if (!response.ok) {
-          throw new Error(payload.detail || "上传失败");
+          throw payload;
         }
 
         currentTaskId = payload.task_id;
@@ -245,9 +264,10 @@
         pollStatus();
       } catch (error) {
         showMessage("");
-        showError(error.message || "上传失败");
+        showError(errorMessage(error));
       } finally {
         setBusy(false);
+        fileInput.value = "";
       }
     }
 
@@ -260,7 +280,7 @@
         const response = await fetch(`/tasks/${currentTaskId}?access_password=`);
         const payload = await response.json();
         if (!response.ok) {
-          throw new Error(payload.detail || "查询状态失败");
+          throw payload;
         }
 
         if (payload.status === "pending" || payload.status === "running") {
@@ -281,11 +301,15 @@
       } catch (error) {
         stopPolling();
         showMessage("");
-        showError(error.message || "查询状态失败");
+        showError(errorMessage(error));
       }
     }
 
-    uploadButton.addEventListener("click", uploadFile);
+    uploadButton.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", uploadFile);
 
     hideDownload();
   </script>
