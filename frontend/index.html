@@ -6,15 +6,16 @@
   <title>经济学人助手小季</title>
   <style>
     :root {
-      --bg: #f4efe6;
+      --bg: #f6f0e6;
       --panel: #fffaf2;
-      --line: #d6c6ac;
+      --line: #d8c7aa;
       --text: #2b2418;
       --muted: #6f6556;
       --accent: #9f4a22;
       --accent-dark: #7e3818;
-      --success: #1d6b3f;
+      --success: #236b45;
       --error: #a12727;
+      --disabled: #d9d1c4;
     }
 
     * {
@@ -23,88 +24,92 @@
 
     body {
       margin: 0;
-      font-family: "Georgia", "Times New Roman", serif;
+      min-height: 100vh;
+      font-family: Georgia, "Times New Roman", serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(159, 74, 34, 0.12), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(42, 91, 134, 0.12), transparent 24%),
-        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 100%);
-      min-height: 100vh;
+        linear-gradient(180deg, rgba(246, 240, 230, 0.92), rgba(246, 240, 230, 0.98)),
+        url("https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1600&q=80");
+      background-size: cover;
+      background-position: center;
     }
 
-    .wrap {
-      width: min(880px, calc(100% - 32px));
-      margin: 40px auto;
+    main {
+      width: min(560px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 72px 0;
     }
 
     .panel {
-      background: rgba(255, 250, 242, 0.95);
+      padding: 28px;
       border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: 0 18px 50px rgba(80, 58, 33, 0.08);
+      border-radius: 8px;
+      background: rgba(255, 250, 242, 0.96);
+      box-shadow: 0 18px 50px rgba(80, 58, 33, 0.12);
     }
 
     h1 {
-      margin: 0 0 20px;
-      font-size: clamp(30px, 5vw, 44px);
-      line-height: 1.1;
-      font-weight: 700;
+      margin: 0 0 24px;
+      font-size: 36px;
+      line-height: 1.15;
       text-align: center;
     }
 
-    .panel {
-      padding: 24px;
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
-    .panel h2 {
-      margin: 0 0 16px;
-      font-size: 24px;
-    }
-
-    input[type="file"],
-    input[type="text"] {
+    input[type="text"],
+    input[type="file"] {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 6px;
       background: #fff;
       color: var(--text);
       font-size: 15px;
     }
 
+    input:disabled {
+      color: var(--muted);
+      background: #f1eadf;
+    }
+
     .actions {
       display: flex;
       gap: 10px;
-      margin-top: 14px;
+      margin-top: 18px;
+      flex-wrap: wrap;
     }
 
     button,
-    .link-button {
+    .download {
+      min-height: 42px;
+      padding: 10px 16px;
       border: 0;
-      border-radius: 999px;
-      padding: 12px 18px;
+      border-radius: 6px;
       font-size: 15px;
       cursor: pointer;
       text-decoration: none;
-      transition: transform 0.15s ease, background 0.15s ease;
     }
 
-    button:hover,
-    .link-button:hover {
-      transform: translateY(-1px);
-    }
-
-    .primary {
+    button {
       background: var(--accent);
       color: #fff;
     }
 
-    .primary:hover {
+    button:hover:not(:disabled) {
       background: var(--accent-dark);
     }
 
-    .primary.processing {
-      background: var(--success);
+    button:disabled,
+    .download[aria-disabled="true"] {
+      background: var(--disabled);
+      color: var(--muted);
+      cursor: not-allowed;
     }
 
     .secondary {
@@ -112,211 +117,141 @@
       color: var(--text);
     }
 
-    .secondary:hover {
+    .secondary:hover:not(:disabled) {
       background: #dfcfb8;
     }
 
-    .link-button {
+    .download {
       display: inline-flex;
+      align-items: center;
       background: var(--success);
       color: #fff;
     }
 
+    .download[aria-disabled="true"] {
+      pointer-events: none;
+    }
+
+    .message,
     .error {
-      margin-top: 14px;
-      color: var(--error);
-      white-space: pre-wrap;
+      margin-top: 16px;
+      min-height: 21px;
       font-size: 14px;
       line-height: 1.5;
+      white-space: pre-wrap;
     }
 
     .message {
-      margin-top: 14px;
       color: var(--success);
-      font-size: 14px;
-      line-height: 1.5;
     }
 
-    .single {
-      max-width: 500px;
-      margin: 120px auto 0;
+    .error {
+      color: var(--error);
     }
 
-    .password-input {
-      margin-top: 0;
-    }
+    @media (max-width: 520px) {
+      main {
+        padding-top: 36px;
+      }
 
-    .hidden-file {
-      display: none;
-    }
+      .panel {
+        padding: 22px;
+      }
 
-    .link-button[aria-disabled="true"] {
-      display: inline-flex;
-      background: #d9d1c4;
-      color: #7e7567;
-      cursor: not-allowed;
-      pointer-events: none;
+      h1 {
+        font-size: 30px;
+      }
+
+      button,
+      .download {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
-  <body>
-  <main class="wrap">
-    <section class="panel single">
+<body>
+  <main>
+    <section class="panel">
       <h1>经济学人助手小季</h1>
-      <input id="accessPassword" class="password-input" type="text" placeholder="请输入访问口令">
-      <input id="epubFile" class="hidden-file" type="file" accept=".epub,application/epub+zip">
+
+      <label for="accessPassword">访问口令</label>
+      <input id="accessPassword" type="text" autocomplete="off" placeholder="先输入访问口令">
+
       <div class="actions">
-        <button id="uploadButton" class="primary" type="button">上传</button>
-        <a id="downloadLink" class="link-button" href="#" aria-disabled="true">下载</a>
+        <button id="verifyButton" type="button">验证口令</button>
+        <button id="resetButton" class="secondary" type="button" disabled>重新输入</button>
       </div>
+
+      <label for="epubFile">EPUB 文件</label>
+      <input id="epubFile" type="file" accept=".epub,application/epub+zip" disabled>
+
+      <div class="actions">
+        <button id="uploadButton" type="button" disabled>上传并处理</button>
+        <a id="downloadLink" class="download" href="#" aria-disabled="true">下载 Word</a>
+      </div>
+
       <div id="messageText" class="message"></div>
       <div id="errorText" class="error"></div>
     </section>
   </main>
 
   <script>
-    const fileInput = document.getElementById("epubFile");
     const accessPasswordInput = document.getElementById("accessPassword");
+    const verifyButton = document.getElementById("verifyButton");
+    const resetButton = document.getElementById("resetButton");
+    const fileInput = document.getElementById("epubFile");
     const uploadButton = document.getElementById("uploadButton");
     const downloadLink = document.getElementById("downloadLink");
     const messageText = document.getElementById("messageText");
     const errorText = document.getElementById("errorText");
 
-    const TASK_STORAGE_KEY = "ecnoAssistTask";
-    const TASK_RETENTION_MS = 24 * 60 * 60 * 1000;
-    let pollTimer = null;
+    let verifiedPassword = "";
     let currentTaskId = "";
-    let currentStatus = "";
-    let hasNotifiedCompletion = false;
-    let verifiedAccessPassword = "";
+    let pollTimer = null;
 
-    function currentAccessPassword() {
+    function passwordValue() {
       return accessPasswordInput.value.trim();
-    }
-
-    function taskAccessPassword() {
-      return verifiedAccessPassword || currentAccessPassword();
-    }
-
-    function hideDownload() {
-      downloadLink.setAttribute("aria-disabled", "true");
-      downloadLink.href = "#";
-    }
-
-    function showDownload() {
-      downloadLink.setAttribute("aria-disabled", "false");
-    }
-
-    function setUploadIdle() {
-      uploadButton.textContent = "上传";
-      uploadButton.classList.remove("processing");
-      uploadButton.disabled = false;
-    }
-
-    function setUploadProcessing() {
-      uploadButton.textContent = "处理中";
-      uploadButton.classList.add("processing");
-      uploadButton.disabled = true;
-    }
-
-    function setUploadVerifying() {
-      uploadButton.textContent = "校验中";
-      uploadButton.classList.add("processing");
-      uploadButton.disabled = true;
-    }
-
-    function showError(message) {
-      errorText.textContent = message || "";
     }
 
     function showMessage(message) {
       messageText.textContent = message || "";
     }
 
-    function saveTask(taskId) {
-      if (!taskId) {
-        return;
-      }
-      const payload = {
-        taskId,
-        savedAt: Date.now(),
-      };
-      window.localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(payload));
+    function showError(message) {
+      errorText.textContent = message || "";
     }
 
-    function clearSavedTask() {
-      window.localStorage.removeItem(TASK_STORAGE_KEY);
+    function setBusy(isBusy) {
+      verifyButton.disabled = isBusy || Boolean(verifiedPassword);
+      resetButton.disabled = isBusy || !verifiedPassword;
+      uploadButton.disabled = isBusy || !verifiedPassword;
+      fileInput.disabled = isBusy || !verifiedPassword;
     }
 
-    function loadSavedTask() {
-      const raw = window.localStorage.getItem(TASK_STORAGE_KEY);
-      if (!raw) {
-        return null;
-      }
-
-      try {
-        const payload = JSON.parse(raw);
-        if (!payload.taskId || !payload.savedAt) {
-          clearSavedTask();
-          return null;
-        }
-        if (Date.now() - payload.savedAt > TASK_RETENTION_MS) {
-          clearSavedTask();
-          return null;
-        }
-        return payload.taskId;
-      } catch {
-        clearSavedTask();
-        return null;
-      }
+    function hideDownload() {
+      downloadLink.href = "#";
+      downloadLink.setAttribute("aria-disabled", "true");
     }
 
-    function renderTask(payload) {
-      const previousStatus = currentStatus;
-      currentTaskId = payload.task_id || "";
-      currentStatus = payload.status || "";
-      if (currentTaskId) {
-        saveTask(currentTaskId);
-      }
-      if (payload.error) {
-        showError(payload.error);
-      } else {
-        showError("");
-      }
+    function showDownload() {
+      const password = encodeURIComponent(verifiedPassword);
+      downloadLink.href = `/tasks/${currentTaskId}/download?access_password=${password}`;
+      downloadLink.setAttribute("aria-disabled", "false");
+    }
 
-      if (currentStatus === "pending") {
-        setUploadProcessing();
-        showMessage("任务已提交，可离开页面，稍后回来下载。");
-      } else if (currentStatus === "running") {
-        setUploadProcessing();
-        showMessage("任务已提交，可离开页面，稍后回来下载。");
-      } else if (currentStatus === "succeeded") {
-        setUploadIdle();
-        showMessage("处理完成，可以下载。");
-        clearSavedTask();
-      } else if (currentStatus === "failed") {
-        setUploadIdle();
-        showMessage("处理失败，请重新上传或稍后再试。");
-        clearSavedTask();
-      }
-
-      if (currentStatus === "succeeded" && currentTaskId) {
-        const accessPassword = encodeURIComponent(taskAccessPassword());
-        downloadLink.href = `/tasks/${currentTaskId}/download?access_password=${accessPassword}`;
-        showDownload();
-      } else {
-        hideDownload();
-      }
-
-      if (!hasNotifiedCompletion && previousStatus !== currentStatus) {
-        if (currentStatus === "succeeded") {
-          hasNotifiedCompletion = true;
-          window.alert("任务处理完成，可以下载文档。");
-        } else if (currentStatus === "failed") {
-          hasNotifiedCompletion = true;
-          window.alert("任务处理失败，请检查文件或稍后重试。");
-        }
-      }
+    function resetAuth() {
+      verifiedPassword = "";
+      currentTaskId = "";
+      accessPasswordInput.disabled = false;
+      accessPasswordInput.value = "";
+      fileInput.value = "";
+      hideDownload();
+      stopPolling();
+      showMessage("");
+      showError("");
+      setBusy(false);
+      accessPasswordInput.focus();
     }
 
     function stopPolling() {
@@ -326,54 +261,21 @@
       }
     }
 
-    async function fetchStatus(taskId, autoPoll = false) {
-      if (!taskId) {
+    async function verifyPassword() {
+      const password = passwordValue();
+      if (!password) {
+        showError("请先输入访问口令。");
         return;
       }
 
-      try {
-        const accessPassword = encodeURIComponent(taskAccessPassword());
-        const response = await fetch(`/tasks/${taskId}?access_password=${accessPassword}`);
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.detail || "查询状态失败");
-        }
-
-        renderTask(payload);
-
-        if (autoPoll && (payload.status === "pending" || payload.status === "running")) {
-          pollTimer = setTimeout(() => fetchStatus(taskId, true), 3000);
-        } else {
-          stopPolling();
-        }
-      } catch (error) {
-        stopPolling();
-        setUploadIdle();
-        showMessage("");
-        showError(error.message || "查询状态失败");
-        if ((error.message || "").includes("task not found")) {
-          clearSavedTask();
-        }
-      }
-    }
-
-    async function verifyPasswordBeforeUpload() {
-      const accessPassword = currentAccessPassword();
-      if (!accessPassword) {
-        showError("请先输入访问口令。");
-        return false;
-      }
-      if (verifiedAccessPassword === accessPassword) {
-        return true;
-      }
-
       const formData = new FormData();
-      formData.append("access_password", accessPassword);
+      formData.append("access_password", password);
 
       try {
-        setUploadVerifying();
-        showMessage("正在校验访问口令。");
+        setBusy(true);
+        showMessage("正在验证口令。");
         showError("");
+
         const response = await fetch("/auth/check", {
           method: "POST",
           body: formData,
@@ -382,61 +284,41 @@
         if (!response.ok) {
           throw new Error(payload.detail || "访问口令错误");
         }
-        verifiedAccessPassword = accessPassword;
+
+        verifiedPassword = password;
+        accessPasswordInput.disabled = true;
         showMessage("口令已通过，请选择 EPUB 文件。");
-        return true;
+        showError("");
       } catch (error) {
-        verifiedAccessPassword = "";
+        verifiedPassword = "";
         showMessage("");
         showError(error.message || "访问口令错误");
-        return false;
       } finally {
-        setUploadIdle();
+        setBusy(false);
       }
     }
 
-    accessPasswordInput.addEventListener("input", () => {
-      if (verifiedAccessPassword !== currentAccessPassword()) {
-        verifiedAccessPassword = "";
-        hideDownload();
-      }
-    });
-
-    uploadButton.addEventListener("click", async () => {
-      const isVerified = await verifyPasswordBeforeUpload();
-      if (!isVerified) {
-        return;
-      }
-      fileInput.click();
-    });
-
-    fileInput.addEventListener("change", async () => {
+    async function uploadFile() {
       const file = fileInput.files[0];
-      const accessPassword = verifiedAccessPassword;
-      if (!accessPassword) {
+      if (!verifiedPassword) {
         showError("请先验证访问口令。");
         return;
       }
       if (!file) {
-        showError("请先选择一个 epub 文件。");
+        showError("请先选择一个 EPUB 文件。");
         return;
       }
 
-      hideDownload();
-      showMessage("");
-      showError("");
-      currentTaskId = "";
-      currentStatus = "";
-      hasNotifiedCompletion = false;
-      stopPolling();
-
       const formData = new FormData();
+      formData.append("access_password", verifiedPassword);
       formData.append("file", file);
-      formData.append("access_password", accessPassword);
 
       try {
-        setUploadIdle();
-        showMessage("正在校验并上传，请稍候。");
+        setBusy(true);
+        hideDownload();
+        showMessage("正在上传，请稍候。");
+        showError("");
+
         const response = await fetch("/tasks", {
           method: "POST",
           body: formData,
@@ -446,21 +328,64 @@
           throw new Error(payload.detail || "上传失败");
         }
 
-        renderTask(payload);
-        fetchStatus(payload.task_id, true);
+        currentTaskId = payload.task_id;
+        showMessage("任务已提交，正在处理。");
+        pollStatus();
       } catch (error) {
-        setUploadIdle();
         showMessage("");
         showError(error.message || "上传失败");
+      } finally {
+        setBusy(false);
       }
-      fileInput.value = "";
+    }
+
+    async function pollStatus() {
+      if (!currentTaskId || !verifiedPassword) {
+        return;
+      }
+
+      try {
+        const password = encodeURIComponent(verifiedPassword);
+        const response = await fetch(`/tasks/${currentTaskId}?access_password=${password}`);
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.detail || "查询状态失败");
+        }
+
+        if (payload.status === "pending" || payload.status === "running") {
+          showMessage("任务处理中，请稍候。");
+          pollTimer = setTimeout(pollStatus, 3000);
+          return;
+        }
+
+        stopPolling();
+        if (payload.status === "succeeded") {
+          showMessage("处理完成，可以下载。");
+          showError("");
+          showDownload();
+        } else if (payload.status === "failed") {
+          showMessage("");
+          showError(payload.error || "处理失败，请重新上传或稍后再试。");
+        }
+      } catch (error) {
+        stopPolling();
+        showMessage("");
+        showError(error.message || "查询状态失败");
+      }
+    }
+
+    verifyButton.addEventListener("click", verifyPassword);
+    resetButton.addEventListener("click", resetAuth);
+    uploadButton.addEventListener("click", uploadFile);
+
+    accessPasswordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        verifyPassword();
+      }
     });
 
-    const savedTaskId = loadSavedTask();
-    if (savedTaskId) {
-      showMessage("已恢复上次任务，正在检查状态。");
-      fetchStatus(savedTaskId, true);
-    }
+    setBusy(false);
+    hideDownload();
   </script>
 </body>
 </html>
