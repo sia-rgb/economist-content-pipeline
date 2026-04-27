@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import traceback
 import uuid
@@ -64,6 +65,69 @@ def verify_access_password(access_password: str | None) -> None:
         return
     if access_password != ACCESS_PASSWORD:
         raise HTTPException(status_code=401, detail="invalid access password")
+
+
+def parse_content_disposition(value: str) -> dict:
+    params = {}
+    for match in re.finditer(r';\s*([^=]+)="?([^";]*)"?', value):
+        params[match.group(1).strip().lower()] = match.group(2)
+    return params
+
+
+def parse_multipart_request(body: bytes, content_type: str) -> tuple[dict[str, str], dict]:
+    boundary_match = re.search(r"boundary=([^;]+)", content_type)
+    if boundary_match is None:
+        raise HTTPException(status_code=400, detail="missing multipart boundary")
+
+    boundary = boundary_match.group(1).strip().strip('"').encode("utf-8")
+    boundary_marker = b"--" + boundary
+    fields = {}
+    files = {}
+
+    for raw_part in body.split(boundary_marker):
+        part = raw_part
+        if not part or part in {b"--", b"--\r\n"}:
+            continue
+        if part.startswith(b"\r\n"):
+            part = part[2:]
+        if part.endswith(b"--\r\n"):
+            part = part[:-4]
+        elif part.endswith(b"--"):
+            part = part[:-2]
+        if part.endswith(b"\r\n"):
+            part = part[:-2]
+        if not part:
+            continue
+
+        header_blob, separator, content = part.partition(b"\r\n\r\n")
+        if not separator:
+            continue
+
+        headers = {}
+        for header_line in header_blob.decode("utf-8", errors="replace").split("\r\n"):
+            if ":" not in header_line:
+                continue
+            key, value = header_line.split(":", 1)
+            headers[key.strip().lower()] = value.strip()
+
+        disposition = headers.get("content-disposition", "")
+        disposition_params = parse_content_disposition(disposition)
+        field_name = disposition_params.get("name")
+        if not field_name:
+            continue
+
+        filename = disposition_params.get("filename")
+        if filename is None:
+            fields[field_name] = content.decode("utf-8", errors="replace")
+            continue
+
+        files[field_name] = {
+            "filename": filename,
+            "content_type": headers.get("content-type", ""),
+            "content": content,
+        }
+
+    return fields, files
 
 
 def read_status(task_id: str) -> dict:
@@ -274,17 +338,24 @@ async def debug_raw(request: Request) -> dict:
 
 @APP.post("/tasks")
 async def create_task(
+    request: Request,
     background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
-    access_password: str = Form(""),
 ) -> dict:
     cleanup_expired_tasks()
+    body = await request.body()
+    fields, files = parse_multipart_request(body, request.headers.get("content-type", ""))
+    access_password = fields.get("access_password", "")
     verify_access_password(access_password)
-    filename = file.filename or ""
+
+    file_payload = files.get("file")
+    if file_payload is None:
+        raise HTTPException(status_code=400, detail="missing file field")
+
+    filename = file_payload["filename"] or ""
     if not filename.lower().endswith(".epub"):
         raise HTTPException(status_code=400, detail="only .epub files are supported")
 
-    content = await file.read()
+    content = file_payload["content"]
     if len(content) > MAX_UPLOAD_SIZE:
         raise HTTPException(status_code=413, detail="file size exceeds 20MB limit")
 
