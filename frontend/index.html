@@ -188,9 +188,14 @@
     let currentTaskId = "";
     let currentStatus = "";
     let hasNotifiedCompletion = false;
+    let verifiedAccessPassword = "";
 
     function currentAccessPassword() {
       return accessPasswordInput.value.trim();
+    }
+
+    function taskAccessPassword() {
+      return verifiedAccessPassword || currentAccessPassword();
     }
 
     function hideDownload() {
@@ -210,6 +215,12 @@
 
     function setUploadProcessing() {
       uploadButton.textContent = "处理中";
+      uploadButton.classList.add("processing");
+      uploadButton.disabled = true;
+    }
+
+    function setUploadVerifying() {
+      uploadButton.textContent = "校验中";
       uploadButton.classList.add("processing");
       uploadButton.disabled = true;
     }
@@ -290,7 +301,7 @@
       }
 
       if (currentStatus === "succeeded" && currentTaskId) {
-        const accessPassword = encodeURIComponent(currentAccessPassword());
+        const accessPassword = encodeURIComponent(taskAccessPassword());
         downloadLink.href = `/tasks/${currentTaskId}/download?access_password=${accessPassword}`;
         showDownload();
       } else {
@@ -321,7 +332,7 @@
       }
 
       try {
-        const accessPassword = encodeURIComponent(currentAccessPassword());
+        const accessPassword = encodeURIComponent(taskAccessPassword());
         const response = await fetch(`/tasks/${taskId}?access_password=${accessPassword}`);
         const payload = await response.json();
         if (!response.ok) {
@@ -346,9 +357,54 @@
       }
     }
 
-    uploadButton.addEventListener("click", async () => {
-      if (!currentAccessPassword()) {
+    async function verifyPasswordBeforeUpload() {
+      const accessPassword = currentAccessPassword();
+      if (!accessPassword) {
         showError("请先输入访问口令。");
+        return false;
+      }
+      if (verifiedAccessPassword === accessPassword) {
+        return true;
+      }
+
+      const formData = new FormData();
+      formData.append("access_password", accessPassword);
+
+      try {
+        setUploadVerifying();
+        showMessage("正在校验访问口令。");
+        showError("");
+        const response = await fetch("/auth/check", {
+          method: "POST",
+          body: formData,
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.detail || "访问口令错误");
+        }
+        verifiedAccessPassword = accessPassword;
+        showMessage("口令已通过，请选择 EPUB 文件。");
+        return true;
+      } catch (error) {
+        verifiedAccessPassword = "";
+        showMessage("");
+        showError(error.message || "访问口令错误");
+        return false;
+      } finally {
+        setUploadIdle();
+      }
+    }
+
+    accessPasswordInput.addEventListener("input", () => {
+      if (verifiedAccessPassword !== currentAccessPassword()) {
+        verifiedAccessPassword = "";
+        hideDownload();
+      }
+    });
+
+    uploadButton.addEventListener("click", async () => {
+      const isVerified = await verifyPasswordBeforeUpload();
+      if (!isVerified) {
         return;
       }
       fileInput.click();
@@ -356,9 +412,9 @@
 
     fileInput.addEventListener("change", async () => {
       const file = fileInput.files[0];
-      const accessPassword = currentAccessPassword();
+      const accessPassword = verifiedAccessPassword;
       if (!accessPassword) {
-        showError("请先输入访问口令。");
+        showError("请先验证访问口令。");
         return;
       }
       if (!file) {

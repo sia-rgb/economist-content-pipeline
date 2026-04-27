@@ -191,6 +191,12 @@ def healthz() -> dict:
     }
 
 
+@APP.post("/auth/check")
+def check_auth(access_password: str = Form("")) -> dict:
+    verify_access_password(access_password)
+    return {"status": "ok"}
+
+
 @APP.post("/tasks")
 async def create_task(
     background_tasks: BackgroundTasks,
