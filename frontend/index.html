@@ -62,7 +62,6 @@
       font-size: 14px;
     }
 
-    input[type="text"],
     input[type="file"] {
       width: 100%;
       padding: 12px 14px;
@@ -71,11 +70,6 @@
       background: #fff;
       color: var(--text);
       font-size: 15px;
-    }
-
-    input:disabled {
-      color: var(--muted);
-      background: #f1eadf;
     }
 
     .actions {
@@ -110,15 +104,6 @@
       background: var(--disabled);
       color: var(--muted);
       cursor: not-allowed;
-    }
-
-    .secondary {
-      background: #eadcc8;
-      color: var(--text);
-    }
-
-    .secondary:hover:not(:disabled) {
-      background: #dfcfb8;
     }
 
     .download {
@@ -175,19 +160,11 @@
     <section class="panel">
       <h1>经济学人助手小季</h1>
 
-      <label for="accessPassword">访问口令</label>
-      <input id="accessPassword" type="text" autocomplete="off" placeholder="先输入访问口令">
-
-      <div class="actions">
-        <button id="verifyButton" type="button">验证口令</button>
-        <button id="resetButton" class="secondary" type="button" disabled>重新输入</button>
-      </div>
-
       <label for="epubFile">EPUB 文件</label>
-      <input id="epubFile" type="file" accept=".epub,application/epub+zip" disabled>
+      <input id="epubFile" type="file" accept=".epub,application/epub+zip">
 
       <div class="actions">
-        <button id="uploadButton" type="button" disabled>上传并处理</button>
+        <button id="uploadButton" type="button">上传并处理</button>
         <a id="downloadLink" class="download" href="#" aria-disabled="true">下载 Word</a>
       </div>
 
@@ -197,22 +174,14 @@
   </main>
 
   <script>
-    const accessPasswordInput = document.getElementById("accessPassword");
-    const verifyButton = document.getElementById("verifyButton");
-    const resetButton = document.getElementById("resetButton");
     const fileInput = document.getElementById("epubFile");
     const uploadButton = document.getElementById("uploadButton");
     const downloadLink = document.getElementById("downloadLink");
     const messageText = document.getElementById("messageText");
     const errorText = document.getElementById("errorText");
 
-    let verifiedPassword = "";
     let currentTaskId = "";
     let pollTimer = null;
-
-    function passwordValue() {
-      return accessPasswordInput.value.trim();
-    }
 
     function showMessage(message) {
       messageText.textContent = message || "";
@@ -223,10 +192,8 @@
     }
 
     function setBusy(isBusy) {
-      verifyButton.disabled = isBusy || Boolean(verifiedPassword);
-      resetButton.disabled = isBusy || !verifiedPassword;
-      uploadButton.disabled = isBusy || !verifiedPassword;
-      fileInput.disabled = isBusy || !verifiedPassword;
+      uploadButton.disabled = isBusy;
+      fileInput.disabled = isBusy;
     }
 
     function hideDownload() {
@@ -235,23 +202,8 @@
     }
 
     function showDownload() {
-      const password = encodeURIComponent(verifiedPassword);
-      downloadLink.href = `/tasks/${currentTaskId}/download?access_password=${password}`;
+      downloadLink.href = `/tasks/${currentTaskId}/download?access_password=`;
       downloadLink.setAttribute("aria-disabled", "false");
-    }
-
-    function resetAuth() {
-      verifiedPassword = "";
-      currentTaskId = "";
-      accessPasswordInput.disabled = false;
-      accessPasswordInput.value = "";
-      fileInput.value = "";
-      hideDownload();
-      stopPolling();
-      showMessage("");
-      showError("");
-      setBusy(false);
-      accessPasswordInput.focus();
     }
 
     function stopPolling() {
@@ -261,61 +213,21 @@
       }
     }
 
-    async function verifyPassword() {
-      const password = passwordValue();
-      if (!password) {
-        showError("请先输入访问口令。");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("access_password", password);
-
-      try {
-        setBusy(true);
-        showMessage("正在验证口令。");
-        showError("");
-
-        const response = await fetch("/auth/check", {
-          method: "POST",
-          body: formData,
-        });
-        const payload = await response.json();
-        if (!response.ok) {
-          throw new Error(payload.detail || "访问口令错误");
-        }
-
-        verifiedPassword = password;
-        accessPasswordInput.disabled = true;
-        showMessage("口令已通过，请选择 EPUB 文件。");
-        showError("");
-      } catch (error) {
-        verifiedPassword = "";
-        showMessage("");
-        showError(error.message || "访问口令错误");
-      } finally {
-        setBusy(false);
-      }
-    }
-
     async function uploadFile() {
       const file = fileInput.files[0];
-      if (!verifiedPassword) {
-        showError("请先验证访问口令。");
-        return;
-      }
       if (!file) {
         showError("请先选择一个 EPUB 文件。");
         return;
       }
 
       const formData = new FormData();
-      formData.append("access_password", verifiedPassword);
+      formData.append("access_password", "");
       formData.append("file", file);
 
       try {
         setBusy(true);
         hideDownload();
+        stopPolling();
         showMessage("正在上传，请稍候。");
         showError("");
 
@@ -340,13 +252,12 @@
     }
 
     async function pollStatus() {
-      if (!currentTaskId || !verifiedPassword) {
+      if (!currentTaskId) {
         return;
       }
 
       try {
-        const password = encodeURIComponent(verifiedPassword);
-        const response = await fetch(`/tasks/${currentTaskId}?access_password=${password}`);
+        const response = await fetch(`/tasks/${currentTaskId}?access_password=`);
         const payload = await response.json();
         if (!response.ok) {
           throw new Error(payload.detail || "查询状态失败");
@@ -374,17 +285,8 @@
       }
     }
 
-    verifyButton.addEventListener("click", verifyPassword);
-    resetButton.addEventListener("click", resetAuth);
     uploadButton.addEventListener("click", uploadFile);
 
-    accessPasswordInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        verifyPassword();
-      }
-    });
-
-    setBusy(false);
     hideDownload();
   </script>
 </body>
