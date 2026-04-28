@@ -1,139 +1,117 @@
-## 一、Core Principles（核心原则）
+# AGENTS.md
 
-- 优先构建最小可运行版本（MVP, Minimum Viable Product）
-- 优先最小改动（Minimal Change），避免不必要的重构（Refactor）
-- 所有开发行为必须服务于“功能可运行”（Runnable First）
-- 文档即约束（Docs as Constraints），必须严格遵守
+## Core Principles（核心原则）
 
----
+1. MVP First（最小可运行优先）
+   - 优先构建最小可运行版本（MVP）
+   - 所有开发行为必须服务于“功能可运行”
 
-## 二、Workflow（工作流程）
+2. Minimal Change（最小改动）
+   - 优先最小改动，避免不必要的重构
 
-在开始任何新任务前，必须先说明：
+3. Runnable First（可运行优先）
+   - 提交前必须保证核心功能可运行
 
-### 1. 本次最小目标（Minimal Goal）
+4. Docs as Constraints（文档即约束 - CRITICAL）
+   - 所有文档均视为运行时约束，必须严格执行
 
-明确当前任务的最小可交付成果（MVP 输出）。
-
----
-
-### 2. 流程链（Process Chain）
-
-使用标准结构表达：
-
-用户输入 → 系统处理 → 输出结果
-
-或：
-
-Input → Process → Output
-
-必要时可使用：
-
-A → B → C
-
-进行流程拆解。
+   Mandatory Rules：
+   - 不允许将文档视为参考或建议
+   - 不允许偏离文档定义的结构或逻辑
+   - 文档冲突必须通过 Precedence 规则解决
+   - 不允许基于经验或常识替代文档规则
 
 ---
 
-### 3. 示例（Example）
+## 以下三类约束的区别（Process / Behavior / Execution）
 
-用户输入 → 文章 EPUB 文件  
-系统处理 → 解析 + 清洗 + 分段翻译  
-输出结果 → 中文口播稿 Word 文档  
+| 类型 | 控制什么 | 本质 | 判断问题 | 典型规则示例 |
+|------|----------|------|----------|--------------|
+| **流程约束（Process）** | 怎么思考 | 思维路径 |
+| **行为约束（Behavior）** | 能做什么 / 不能做什么 | 行为边界 | 
+| **执行约束（Execution）** | 什么时候可以做 | 执行时机 | 
+
+
+## Process Constraints（流程约束）
+
+### Workflow（工作流程）
+
+在开始任何任务前，必须输出：
+
+#### 1. Minimal Goal（最小目标）
+明确本次任务的最小可交付成果（MVP）
+
+#### 2. Process Chain（流程链）
+
+必须使用标准结构表达：
+
+- 用户输入 → 系统处理 → 输出结果  
+- 或：Input → Process → Output  
+- 必要时使用：A → B → C
+
+未经用户确认，不得进入代码实现
 
 ---
 
-⚠️ 未经用户确认，不得直接进入代码实现（DO NOT write code before confirmation）
+## Behavior Constraints（行为约束）
+
+### Development Rules（开发规范）
+
+- 禁止过早优化
+- 优先最小改动
+- 提交前必须通过 Runnable Check
+- commit 必须一句话说明
 
 ---
 
-## 三、Development Rules（开发规范）
-
-- 优先实现 MVP，不提前设计复杂扩展（No Premature Optimization）
-- 优先最小改动（Minimal Change）
-- 提交前必须验证核心功能可运行（Runnable Check）
-- 每次 commit 必须使用一句话说明改动（One-line Commit Message）
-
----
-
-## 四、Forbidden Actions（禁止行为）
+### Forbidden Actions（禁止行为）
 
 除非用户明确要求，否则禁止：
 
-- 修改日志输出样式（Log Format）
-- 美化 print 内容（Output Styling）
-- 重命名变量（Variable Renaming）
-- 修改注释风格（Comment Style）
-- 调整无关格式（Formatting Changes）
-- 做非必要重构（Unnecessary Refactor）
+- 修改日志输出样式
+- 美化 print 内容
+- 重命名变量
+- 修改注释风格
+- 调整无关格式
+- 非必要重构
 
 ---
 
-## 五、Execution Rule: Preflight Required（执行前检查）
+### Encoding Rules（编码规范 - CRITICAL）
 
-在执行以下操作前，必须进行 Preflight Check：
-
-- Benchmark（性能测试）
-- Concurrency Test（并发测试）
-- Performance Experiment（性能实验）
+- 所有文件必须使用 UTF-8
+- 禁止依赖系统默认编码
 
 ---
 
-### Preflight Check 必须报告：
+## Execution Constraints（执行约束）
 
-1. 代码中的实际约束（Effective Constraints）
-   - 如：MAX_CONCURRENT、Semaphore 等
+### Preflight Required（执行前检查）
 
-2. 请求参数是否真实可达（Feasibility）
+适用场景：
 
-3. 是否存在使实验无效的条件（Invalid Conditions）
+- Benchmark
+- Concurrency Test
+- Performance Experiment
 
-4. 明确结论：
-   - VALID（可执行）
-   - INVALID（不可执行）
+#### 必须检查：
 
----
+1. Effective Constraints
+2. Feasibility
+3. Invalid Conditions
 
-### 强制规则（Mandatory Rules）
+#### 输出结论：
 
+- VALID
+- INVALID
 
-- 若存在 INVALID 条件 → 禁止执行测试
-- 禁止假设参数生效，必须验证（No Assumption）
-- 执行前必须请求用户确认（Require Confirmation）
+#### Mandatory Rules：
 
----
+- 若 INVALID → 禁止执行
+- 禁止假设参数生效
+- 必须请求用户确认
 
-### Definition of Done（完成定义）
+#### Definition of Done：
 
-满足以下之一：
-
-(A) Preconditions 已确认 → 成功执行测试  
-(B) Preconditions 无效 → 停止并说明原因  
-
----
-
-## 六、Encoding Rules（编码规范 - CRITICAL）
-
-所有文件必须使用 UTF-8 编码（UTF-8 Only）
-
-禁止依赖系统默认编码（No Default Encoding）
-
----
-
-### Python
-
-读取文件：
-open(file, "r", encoding="utf-8")
-
-写入文件：
-open(file, "w", encoding="utf-8")
-
----
-
-### PowerShell
-
-读取文件：
-Get-Content -Encoding UTF8
-
-写入文件：
-Set-Content -Encoding UTF8
+- Preconditions valid → 执行  
+- Preconditions invalid → 停止
