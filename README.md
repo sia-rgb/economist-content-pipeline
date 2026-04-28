@@ -38,7 +38,7 @@ python pipeline.py TE20260314.epub
 | 翻译调用与并发参数 | `translate_articles.py` |
 | 服务接口、任务状态与下载行为 | `app.py` |
 | Python 依赖 | `requirements.txt` |
-| 本地运行配置 | `.env` / 系统环境变量 |
+| 本地运行配置 | `.env` |
 | 开发约束 | `AGENTS.md` |
 
 
