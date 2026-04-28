@@ -38,16 +38,14 @@
 
 在开始任何任务前，必须输出：
 
-#### 1. 最小目标（Minimal Goal）
-明确本次任务的最小可交付成果（MVP）
+ 1. 最小目标（Minimal Goal）
+    - 明确本次任务的最小可交付成果（MVP）
 
-#### 2. 流程链（Process Chain）
-
-必须使用标准结构表达：
-
-- 用户输入 → 系统处理 → 输出结果  
-- 或：Input → Process → Output  
-- 必要时使用：A → B → C
+ 2. 流程链（Process Chain）
+    - 必须使用标准结构表达：
+      - 用户输入 → 系统处理 → 输出结果  
+      - 或：Input → Process → Output  
+      - 必要时使用：A → B → C
 
 未经用户确认，不得进入代码实现
 
@@ -55,32 +53,28 @@
 
 ## 行为约束（Behavior Constraints）
 
-### 1.开发规范（Development Rules）
-
-- 禁止过早优化
-- 优先最小改动
-- 提交前必须通过 Runnable Check
-- commit 必须一句话说明
+1. 开发规范（Development Rules）
+   - 禁止过早优化
+   - 优先最小改动
+   - 提交前必须通过 Runnable Check
+   - commit 必须一句话说明
 
 ---
 
-### 2.禁止行为（Forbidden Actions）
-
+2. 禁止行为（Forbidden Actions）
 除非用户明确要求，否则禁止：
-
-- 修改日志输出样式
-- 美化 print 内容
-- 重命名变量
-- 修改注释风格
-- 调整无关格式
-- 非必要重构
+   - 修改日志输出样式
+   - 美化 print 内容
+   - 重命名变量
+   - 修改注释风格
+   - 调整无关格式
+   - 非必要重构
 
 ---
 
-### 3.编码规范（Encoding Rules - CRITICAL）
-
-- 所有文件必须使用 UTF-8
-- 禁止依赖系统默认编码
+3. 编码规范（Encoding Rules - CRITICAL）
+   - 所有文件必须使用 UTF-8
+   - 禁止依赖系统默认编码
 
 ---
 
