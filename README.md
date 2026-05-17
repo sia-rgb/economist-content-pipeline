@@ -65,5 +65,3 @@ python src\pipeline.py 输入示例：TE20260509.epub
 ## 4. 输出示意图
 
 ![示意图1](assets/示意图1.png)
-
-![示意图2](assets/示意图2.png)
