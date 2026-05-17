@@ -3,95 +3,685 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>经济学人助手小季</title>
+  <title>Economist Content Pipeline</title>
   <style>
     * {
       box-sizing: border-box;
     }
 
+    :root {
+      --ink: #101820;
+      --panel: #f8faf7;
+      --muted: #5f6f73;
+      --line: rgba(16, 24, 32, 0.14);
+      --accent: #00a6a6;
+      --accent-strong: #007f7d;
+      --gold: #d9a441;
+      --green: #4f8a5f;
+      --paper: #fffdf7;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Georgia, "Times New Roman", serif;
-      color: #2b2418;
-      background: #f6f0e6;
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, #101820 0%, #15232d 42%, #edf3ef 42%, #f7f1e7 100%);
     }
 
-    main {
-      width: min(560px, calc(100% - 32px));
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      min-height: 100vh;
+    }
+
+    .nav {
+      width: min(1120px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 72px 0;
+      padding: 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: #ffffff;
     }
 
-    section {
-      padding: 28px;
-      border: 1px solid #d8c7aa;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.35);
       border-radius: 8px;
-      background: #fffaf2;
-      box-shadow: 0 18px 50px rgba(80, 58, 33, 0.1);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--gold);
+      font-size: 18px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .nav-links a {
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .hero {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+      gap: 32px;
+      align-items: center;
+    }
+
+    .hero-copy {
+      color: #ffffff;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      margin: 0 0 18px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 6px;
+      color: #d7ece9;
+      background: rgba(0, 166, 166, 0.14);
+      font-size: 13px;
+      font-weight: 700;
     }
 
     h1 {
-      margin: 0 0 24px;
-      font-size: 34px;
-      line-height: 1.15;
-      text-align: center;
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 650px;
+      margin: 22px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #062224;
+    }
+
+    .btn-primary:hover {
+      background: #25c2bd;
+    }
+
+    .btn-ghost {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .hero-stats {
+      margin-top: 36px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 660px;
+    }
+
+    .stat {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .stat strong {
+      display: block;
+      color: #ffffff;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .demo-panel {
+      position: relative;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      background: rgba(248, 250, 247, 0.96);
+      box-shadow: 0 28px 80px rgba(5, 12, 18, 0.28);
+    }
+
+    .demo-panel::before {
+      content: "";
+      position: absolute;
+      inset: 12px 12px auto;
+      height: 5px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--gold), var(--green));
+    }
+
+    .panel-top {
+      margin-top: 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .panel-top h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: rgba(79, 138, 95, 0.12);
+      color: #27633a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .panel-text {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .upload-form {
+      margin-top: 22px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      color: #6f6556;
+      margin-bottom: 9px;
+      color: #34464a;
       font-size: 14px;
+      font-weight: 700;
     }
 
     input[type="file"] {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #d8c7aa;
-      border-radius: 6px;
-      background: #fff;
-      color: #2b2418;
-      font-size: 15px;
+      padding: 13px 14px;
+      border: 1px dashed rgba(16, 24, 32, 0.28);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      font-size: 14px;
     }
 
     button {
       width: 100%;
-      min-height: 44px;
-      margin-top: 18px;
+      min-height: 48px;
+      margin-top: 16px;
       border: 0;
-      border-radius: 6px;
-      background: #9f4a22;
-      color: #fff;
+      border-radius: 8px;
+      background: var(--ink);
+      color: #ffffff;
       font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
     }
 
     button:hover {
-      background: #7e3818;
+      background: #233544;
     }
 
-    p {
-      margin: 16px 0 0;
-      color: #6f6556;
+    .panel-note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .section {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 64px 0;
+    }
+
+    .section-header {
+      max-width: 720px;
+      margin-bottom: 26px;
+    }
+
+    .section-kicker {
+      margin: 0 0 10px;
+      color: var(--accent-strong);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .light-title {
+      color: #ffffff;
+    }
+
+    .section p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .feature-card {
+      min-height: 190px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 247, 0.9);
+    }
+
+    .feature-card .icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(0, 166, 166, 0.12);
+      color: var(--accent-strong);
+      font-weight: 900;
+    }
+
+    .feature-card h3 {
+      margin: 18px 0 0;
+      font-size: 18px;
+    }
+
+    .feature-card p {
+      margin-top: 10px;
       font-size: 14px;
-      line-height: 1.5;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .flow-step {
+      min-height: 128px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .flow-step strong {
+      display: block;
+      color: var(--accent-strong);
+      font-size: 13px;
+    }
+
+    .flow-step span {
+      display: block;
+      margin-top: 14px;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .tech-band {
+      background: #101820;
+      color: #ffffff;
+    }
+
+    .tech-band .section-kicker {
+      color: #8ce2df;
+    }
+
+    .tech-band .section p {
+      color: rgba(255, 255, 255, 0.68);
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .tech-item {
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .tech-item strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .tech-item span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.64);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .final-cta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+    }
+
+    .final-cta h2 {
+      font-size: clamp(26px, 4vw, 38px);
+    }
+
+    .final-cta .btn {
+      color: #ffffff;
+      background: var(--ink);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        background: linear-gradient(180deg, #101820 0%, #15232d 54%, #f7f1e7 54%, #f7f1e7 100%);
+      }
+
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 26px;
+      }
+
+      .hero-stats,
+      .feature-grid,
+      .flow,
+      .tech-grid,
+      .final-cta {
+        grid-template-columns: 1fr;
+      }
+
+      .final-cta {
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .nav-links {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .hero {
+        width: min(100% - 24px, 1120px);
+      }
+
+      .section {
+        width: min(100% - 24px, 1120px);
+        padding: 46px 0;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .demo-panel {
+        padding: 18px;
+      }
     }
   </style>
 </head>
 <body>
-  <main>
-    <section>
-      <h1>经济学人助手小季</h1>
+  <div class="page">
+    <nav class="nav" aria-label="主导航">
+      <a class="brand" href="/">
+        <span class="brand-mark">E</span>
+        <span>Economist Content Pipeline</span>
+      </a>
+      <div class="nav-links">
+        <a href="#capability">能力</a>
+        <a href="#workflow">流程</a>
+        <a href="#stack">技术</a>
+        <a href="#demo">体验</a>
+      </div>
+    </nav>
 
-      <form action="/submit" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="access_password" value="">
-        <label for="epubFile">EPUB 文件</label>
-        <input id="epubFile" name="file" type="file" accept=".epub,application/epub+zip" required>
-        <button type="submit">上传并处理</button>
-      </form>
-      <p>上传后会进入任务状态页，处理完成后可下载 Word。</p>
-    </section>
-  </main>
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Public Demo · FastAPI · LLM Workflow</p>
+          <h1>Economist Content Pipeline</h1>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#demo">在线体验</a>
+            <a class="btn btn-ghost" href="https://github.com/sia-rgb/economist-content-pipeline" target="_blank" rel="noreferrer">查看 GitHub</a>
+          </div>
+          <div class="hero-stats" aria-label="项目能力概览">
+            <div class="stat">
+              <strong>EPUB</strong>
+              <span>固定来源内容解析</span>
+            </div>
+            <div class="stat">
+              <strong>LLM</strong>
+              <span>中文口播稿生成</span>
+            </div>
+            <div class="stat">
+              <strong>DOCX</strong>
+              <span>可交付文档输出</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="demo-panel" id="demo" aria-labelledby="demo-title">
+          <div class="panel-top">
+            <div>
+              <h2 id="demo-title">体验入口</h2>
+              <p class="panel-text">上传 EPUB 后进入任务状态页，处理完成后下载 Word 文档，示例输出已放入 GitHub，可先查看结果再体验</p>
+            </div>
+            <span class="status-pill">公网可访问</span>
+          </div>
+
+          <form class="upload-form" action="/submit" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="access_password" value="">
+            <label for="epubFile">选择 EPUB 文件</label>
+            <input id="epubFile" name="file" type="file" accept=".epub,application/epub+zip" required>
+            <button type="submit">上传并处理</button>
+          </form>
+          <p class="panel-note">当前版本保留最小可运行闭环，重点展示项目搭建、接口联动和内容处理能力</p>
+
+        </section>
+      </section>
+
+      <section class="section" id="capability">
+        <div class="section-header">
+          <p class="section-kicker">Core Capability</p>
+          <h2 class="light-title">从杂志文件到可交付文稿的完整闭环</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon">01</div>
+            <h3>EPUB 解析</h3>
+            <p>面向《经济学人》固定内容来源，提取文章结构并保留后续处理所需信息</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">02</div>
+            <h3>正文清洗</h3>
+            <p>过滤无关内容，按长度筛选适合转化为中文口播稿的文章</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">03</div>
+            <h3>AI 翻译</h3>
+            <p>调用大模型生成更适合中文听众阅读和收听的稿件文本</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">04</div>
+            <h3>Word 输出</h3>
+            <p>将处理结果组织为可下载、可审阅、可继续编辑的 DOCX 文档</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="workflow">
+        <div class="section-header">
+          <p class="section-kicker">Workflow</p>
+          <h2>清晰可解释的处理流程</h2>
+        </div>
+
+        <div class="flow">
+          <div class="flow-step">
+            <strong>Step 1</strong>
+            <span>Upload EPUB</span>
+          </div>
+          <div class="flow-step">
+            <strong>Step 2</strong>
+            <span>Extract Articles</span>
+          </div>
+          <div class="flow-step">
+            <strong>Step 3</strong>
+            <span>Clean Content</span>
+          </div>
+          <div class="flow-step">
+            <strong>Step 4</strong>
+            <span>Translate Draft</span>
+          </div>
+          <div class="flow-step">
+            <strong>Step 5</strong>
+            <span>Export DOCX</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="tech-band" id="stack">
+        <section class="section">
+          <div class="section-header">
+            <p class="section-kicker">Technical Stack</p>
+            <h2>一个小型但完整的前后端项目样本</h2>
+            <p>项目覆盖页面设计、服务接口、文件上传、异步任务、第三方模型调用、文档生成和公网部署</p>
+          </div>
+
+          <div class="tech-grid">
+            <div class="tech-item">
+              <strong>Frontend</strong>
+              <span>原生 HTML/CSS 构建公网展示页，保留真实上传入口</span>
+            </div>
+            <div class="tech-item">
+              <strong>Backend</strong>
+              <span>FastAPI 提供首页、上传、任务状态和文件下载接口</span>
+            </div>
+            <div class="tech-item">
+              <strong>Pipeline</strong>
+              <span>EPUB 解析、文本清洗、LLM 翻译、DOCX 生成串联为闭环</span>
+            </div>
+            <div class="tech-item">
+              <strong>Deployment</strong>
+              <span>公网服务器部署，可直接访问在线 Demo</span>
+            </div>
+            <div class="tech-item">
+              <strong>Deliverable</strong>
+              <span>输出 Word 文档，便于展示最终结果和业务可用性</span>
+            </div>
+            <div class="tech-item">
+              <strong>MVP Scope</strong>
+              <span>优先验证核心价值，避免在展示阶段引入过度复杂设计</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="section">
+        <div class="final-cta">
+          <div>
+            <p class="section-kicker">Ready to Review</p>
+            <h2>先看项目结果，再进入在线体验</h2>
+          </div>
+          <a class="btn" href="https://github.com/sia-rgb/economist-content-pipeline" target="_blank" rel="noreferrer">查看项目仓库</a>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
