@@ -458,6 +458,41 @@
       background: var(--ink);
     }
 
+    .export-fab {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 20;
+      min-width: 72px;
+      width: auto;
+      margin-top: 0;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(16, 24, 32, 0.84);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(10, 16, 22, 0.28);
+      backdrop-filter: blur(10px);
+    }
+
+    .export-fab:hover {
+      background: rgba(16, 24, 32, 0.94);
+    }
+
+    .export-fab:disabled {
+      opacity: 0.72;
+      cursor: wait;
+    }
+
+    html.exporting .export-fab {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     @media (max-width: 900px) {
       body {
         background: linear-gradient(180deg, #101820 0%, #15232d 54%, #f7f1e7 54%, #f7f1e7 100%);
@@ -511,6 +546,13 @@
 
       .demo-panel {
         padding: 18px;
+      }
+
+      .export-fab {
+        right: 14px;
+        bottom: 14px;
+        min-width: 64px;
+        padding: 0 16px;
       }
     }
   </style>
@@ -683,5 +725,83 @@
       </section>
     </main>
   </div>
+  <button class="export-fab" id="exportBtn" type="button" aria-label="导出整页为 PNG">导出</button>
+  <script>
+    const exportBtn = document.getElementById("exportBtn");
+    let html2canvasLoader = null;
+
+    function loadHtml2Canvas() {
+      if (window.html2canvas) {
+        return Promise.resolve(window.html2canvas);
+      }
+
+      if (!html2canvasLoader) {
+        html2canvasLoader = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+          script.onload = () => resolve(window.html2canvas);
+          script.onerror = () => reject(new Error("html2canvas load failed"));
+          document.head.appendChild(script);
+        });
+      }
+
+      return html2canvasLoader;
+    }
+
+    function triggerDownload(canvas) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("canvas export failed"));
+            return;
+          }
+
+          const link = document.createElement("a");
+          const objectUrl = URL.createObjectURL(blob);
+          link.download = `economist-content-pipeline-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+          link.href = objectUrl;
+          link.click();
+          URL.revokeObjectURL(objectUrl);
+          resolve();
+        }, "image/png");
+      });
+    }
+
+    async function exportPageAsPng() {
+      if (exportBtn.disabled) {
+        return;
+      }
+
+      const originalText = exportBtn.textContent;
+      exportBtn.disabled = true;
+      exportBtn.textContent = "导出中";
+      document.documentElement.classList.add("exporting");
+
+      try {
+        const html2canvas = await loadHtml2Canvas();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        const canvas = await html2canvas(document.documentElement, {
+          backgroundColor: "#ffffff",
+          scale: Math.min(2, window.devicePixelRatio || 1),
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: document.documentElement.scrollWidth,
+          windowHeight: document.documentElement.scrollHeight
+        });
+
+        await triggerDownload(canvas);
+      } catch (error) {
+        alert("导出失败，请重试。");
+      } finally {
+        document.documentElement.classList.remove("exporting");
+        exportBtn.disabled = false;
+        exportBtn.textContent = originalText;
+      }
+    }
+
+    exportBtn.addEventListener("click", exportPageAsPng);
+  </script>
 </body>
 </html>

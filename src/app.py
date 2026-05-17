@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from dotenv import load_dotenv
 
@@ -29,7 +29,6 @@ TASKS_DIR = Path("tasks")
 FRONTEND_FILE = Path("frontend") / "index.html"
 ALLOWED_STATUSES = {"pending", "running", "succeeded", "failed"}
 TASK_RETENTION_HOURS = int(os.getenv("TASK_RETENTION_HOURS", "24"))
-ACCESS_PASSWORD = os.getenv("ACCESS_PASSWORD", "")
 MAX_UPLOAD_SIZE = 20 * 1024 * 1024
 
 
@@ -58,13 +57,6 @@ def error_file_for(task_id: str) -> Path:
 
 def output_file_for(task_id: str) -> Path:
     return task_dir_for(task_id) / "output.docx"
-
-
-def verify_access_password(access_password: str | None) -> None:
-    if not ACCESS_PASSWORD:
-        return
-    if access_password != ACCESS_PASSWORD:
-        raise HTTPException(status_code=401, detail="invalid access password")
 
 
 def parse_content_disposition(value: str) -> dict:
@@ -335,13 +327,13 @@ def render_task_page(task_id: str) -> str:
     taskIdText.textContent = taskId;
 
     function showDownload() {{
-      downloadLink.href = `/tasks/${{taskId}}/download?access_password=`;
+      downloadLink.href = `/tasks/${{taskId}}/download`;
       downloadLink.setAttribute("aria-disabled", "false");
     }}
 
     async function pollStatus() {{
       try {{
-        const response = await fetch(`/tasks/${{taskId}}?access_password=`);
+        const response = await fetch(`/tasks/${{taskId}}`);
         const contentType = response.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {{
           messageText.textContent = "连接波动，正在重试。";
@@ -391,8 +383,6 @@ async def create_task_from_request(
     cleanup_expired_tasks()
     body = await request.body()
     fields, files = parse_multipart_request(body, request.headers.get("content-type", ""))
-    access_password = fields.get("access_password", "")
-    verify_access_password(access_password)
 
     file_payload = files.get("file")
     if file_payload is None:
@@ -446,12 +436,6 @@ def healthz() -> dict:
     }
 
 
-@APP.post("/auth/check")
-def check_auth(access_password: str = Form("")) -> dict:
-    verify_access_password(access_password)
-    return {"status": "ok"}
-
-
 @APP.post("/tasks")
 async def create_task(
     request: Request,
@@ -470,8 +454,7 @@ async def submit_task(
 
 
 @APP.get("/tasks/{task_id}")
-def get_task_status(task_id: str, access_password: str = Query("")) -> dict:
-    verify_access_password(access_password)
+def get_task_status(task_id: str) -> dict:
     payload = read_status(task_id)
     error_file = error_file_for(task_id)
     if payload["status"] == "failed" and error_file.exists():
@@ -480,8 +463,7 @@ def get_task_status(task_id: str, access_password: str = Query("")) -> dict:
 
 
 @APP.get("/tasks/{task_id}/download")
-def download_task_output(task_id: str, access_password: str = Query("")) -> FileResponse:
-    verify_access_password(access_password)
+def download_task_output(task_id: str) -> FileResponse:
     payload = read_status(task_id)
     if payload["status"] != "succeeded":
         raise HTTPException(status_code=409, detail="task is not ready for download")
